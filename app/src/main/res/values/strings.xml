@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SpaceX</string>
+    <string name="launch_details">Launch Details</string>
+    <string name="rocket_details">Rocket Details</string>
+    <string name="launch">Launch</string>
+    <string name="dummy_date">24-1-2021</string>
+</resources>
