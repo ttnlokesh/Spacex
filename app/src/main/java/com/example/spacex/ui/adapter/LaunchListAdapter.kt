@@ -11,10 +11,9 @@ import com.example.spacex.data.network.response.LaunchResponseItem
 import com.example.spacex.databinding.ItemLaunchBinding
 import com.example.spacex.ui.feature.launch.LaunchDetailsActivity
 
-class LaunchListAdapter() :
+class LaunchListAdapter :
     RecyclerView.Adapter<LaunchListAdapter.ViewHolder>() {
     private var mList = ArrayList<LaunchResponseItem>()
-    private var mTempList = ArrayList<LaunchResponseItem>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemLaunchBinding.inflate(LayoutInflater.from(parent.context))
         val viewHolder = ViewHolder(binding)
@@ -46,27 +45,6 @@ class LaunchListAdapter() :
     @SuppressLint("NotifyDataSetChanged")
     fun updateList(list: ArrayList<LaunchResponseItem>) {
         mList = list
-        mTempList = mList
-        notifyDataSetChanged()
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun filterByLaunchSuccess() {
-        val f = mTempList.filter { it.launchSuccess == true }
-        mList = (f as ArrayList<LaunchResponseItem>)
-        notifyDataSetChanged()
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun filterByLaunchUnSuccess() {
-        val f = mTempList.filter { it.launchSuccess == false }
-        mList = (f as ArrayList<LaunchResponseItem>)
-        notifyDataSetChanged()
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun sortByMissionName() {
-        mList.sortBy { it.missionName }
         notifyDataSetChanged()
     }
 

@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-class SpaceXViewModel(private val spaceXRepository: SpaceXRepository): ViewModel() {
+class SpaceXViewModel(private val spaceXRepository: SpaceXRepository) : ViewModel() {
 
     //Livedata for launch data
     private val _errorResponseLiveData = MutableLiveData<String>()
@@ -22,18 +22,18 @@ class SpaceXViewModel(private val spaceXRepository: SpaceXRepository): ViewModel
 
 
     //Livedata for rocket data
-    private val _rocketResponseLiveData = MutableLiveData <Resource<Response<RocketResponse>>>()
-    val rocketResponseLiveData: LiveData<Resource<Response<RocketResponse>>> = _rocketResponseLiveData
+    private val _rocketResponseLiveData = MutableLiveData<Resource<Response<RocketResponse>>>()
+    val rocketResponseLiveData: LiveData<Resource<Response<RocketResponse>>> =
+        _rocketResponseLiveData
 
     //Livedata for progressbar
-     val isProgressBarVisibleLiveData = MutableLiveData<Boolean>()
+    val isProgressBarVisibleLiveData = MutableLiveData<Boolean>(false)
 
     private val _launchListLiveData = MutableLiveData<ArrayList<LaunchResponseItem>>()
     val launchListLiveData: LiveData<ArrayList<LaunchResponseItem>> = _launchListLiveData
 
-    init {
-        isProgressBarVisibleLiveData.value = false
-    }
+    var launchList = ArrayList<LaunchResponseItem>()
+    var filteredList = ArrayList<LaunchResponseItem>()
 
     fun getLaunchData() {
         viewModelScope.launch {
@@ -44,10 +44,14 @@ class SpaceXViewModel(private val spaceXRepository: SpaceXRepository): ViewModel
     private suspend fun callApiLaunchData() {
         isProgressBarVisibleLiveData.value = true
         withContext(Dispatchers.IO) {
-            val launchResponseAsync = async {  spaceXRepository.getLaunchList() }
-            val launchResponse =  launchResponseAsync.await()
-            if(launchResponse.isSuccessful) {
+            val launchResponseAsync = async { spaceXRepository.getLaunchList() }
+            val launchResponse = launchResponseAsync.await()
+            if (launchResponse.isSuccessful) {
                 _launchListLiveData.postValue(launchResponse.body())
+                launchResponse.body()?.let {
+                    launchList = it
+                    filteredList = it
+                }
             } else {
                 _errorResponseLiveData.postValue("Error")
             }
@@ -55,21 +59,21 @@ class SpaceXViewModel(private val spaceXRepository: SpaceXRepository): ViewModel
         isProgressBarVisibleLiveData.value = false
     }
 
-    fun getRocketInfo(rocketId:String) {
+    fun getRocketInfo(rocketId: String) {
         viewModelScope.launch {
             callApiRocketInfo(rocketId)
         }
     }
 
-    private suspend fun callApiRocketInfo(rocketId:String) {
+    private suspend fun callApiRocketInfo(rocketId: String) {
         _rocketResponseLiveData.value = Resource.loading(data = null)
         isProgressBarVisibleLiveData.value = true
         withContext(Dispatchers.IO) {
-            val rocketResponseAsync = async {  spaceXRepository.getRocketInfo(rocketId) }
-            val rocketResponse =  rocketResponseAsync.await()
-            if(rocketResponse.isSuccessful) {
+            val rocketResponseAsync = async { spaceXRepository.getRocketInfo(rocketId) }
+            val rocketResponse = rocketResponseAsync.await()
+            if (rocketResponse.isSuccessful) {
                 _rocketResponseLiveData.postValue(Resource.success(data = rocketResponse))
-            }else {
+            } else {
                 _errorResponseLiveData.postValue("Error")
             }
         }

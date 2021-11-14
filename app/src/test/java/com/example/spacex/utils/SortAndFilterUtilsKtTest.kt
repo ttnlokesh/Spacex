@@ -1,127 +1,21 @@
-package com.example.spacex.data.repository
+package com.example.spacex.utils
 
 import com.example.spacex.data.network.api.ApiInterface
 import com.example.spacex.data.network.response.LaunchResponseItem
-import com.example.spacex.data.network.response.RocketResponse
+import com.example.spacex.data.repository.SpaceXRepository
+import com.example.spacex.viewmodel.SpaceXViewModel
 import com.google.gson.Gson
-import kotlinx.coroutines.runBlocking
-import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
-import retrofit2.Response
 
-class SpaceXRepositoryTest {
+
+internal class SortAndFilterUtilsKtTest {
+    private lateinit var viewModel: SpaceXViewModel
+    private lateinit var spaceXRepository: SpaceXRepository
     private lateinit var apiServiceMock: ApiInterface
-    private lateinit var rocketResponse: RocketResponse
-    private lateinit var launchResponse: ArrayList<LaunchResponseItem>
-    private val rocketRes = "{\n" +
-            "  \"id\": 1,\n" +
-            "  \"active\": false,\n" +
-            "  \"stages\": 2,\n" +
-            "  \"boosters\": 0,\n" +
-            "  \"cost_per_launch\": 6700000,\n" +
-            "  \"success_rate_pct\": 40,\n" +
-            "  \"first_flight\": \"2006-03-24\",\n" +
-            "  \"country\": \"Republic of the Marshall Islands\",\n" +
-            "  \"company\": \"SpaceX\",\n" +
-            "  \"height\": {\n" +
-            "    \"meters\": 22.25,\n" +
-            "    \"feet\": 73\n" +
-            "  },\n" +
-            "  \"diameter\": {\n" +
-            "    \"meters\": 1.68,\n" +
-            "    \"feet\": 5.5\n" +
-            "  },\n" +
-            "  \"mass\": {\n" +
-            "    \"kg\": 30146,\n" +
-            "    \"lb\": 66460\n" +
-            "  },\n" +
-            "  \"payload_weights\": [\n" +
-            "    {\n" +
-            "      \"id\": \"leo\",\n" +
-            "      \"name\": \"Low Earth Orbit\",\n" +
-            "      \"kg\": 450,\n" +
-            "      \"lb\": 992\n" +
-            "    }\n" +
-            "  ],\n" +
-            "  \"first_stage\": {\n" +
-            "    \"reusable\": false,\n" +
-            "    \"engines\": 1,\n" +
-            "    \"fuel_amount_tons\": 44.3,\n" +
-            "    \"burn_time_sec\": 169,\n" +
-            "    \"thrust_sea_level\": {\n" +
-            "      \"kN\": 420,\n" +
-            "      \"lbf\": 94000\n" +
-            "    },\n" +
-            "    \"thrust_vacuum\": {\n" +
-            "      \"kN\": 480,\n" +
-            "      \"lbf\": 110000\n" +
-            "    }\n" +
-            "  },\n" +
-            "  \"second_stage\": {\n" +
-            "    \"reusable\": false,\n" +
-            "    \"engines\": 1,\n" +
-            "    \"fuel_amount_tons\": 3.38,\n" +
-            "    \"burn_time_sec\": 378,\n" +
-            "    \"thrust\": {\n" +
-            "      \"kN\": 31,\n" +
-            "      \"lbf\": 7000\n" +
-            "    },\n" +
-            "    \"payloads\": {\n" +
-            "      \"option_1\": \"composite fairing\",\n" +
-            "      \"composite_fairing\": {\n" +
-            "        \"height\": {\n" +
-            "          \"meters\": 3.5,\n" +
-            "          \"feet\": 11.5\n" +
-            "        },\n" +
-            "        \"diameter\": {\n" +
-            "          \"meters\": 1.5,\n" +
-            "          \"feet\": 4.9\n" +
-            "        }\n" +
-            "      }\n" +
-            "    }\n" +
-            "  },\n" +
-            "  \"engines\": {\n" +
-            "    \"number\": 1,\n" +
-            "    \"type\": \"merlin\",\n" +
-            "    \"version\": \"1C\",\n" +
-            "    \"layout\": \"single\",\n" +
-            "    \"isp\": {\n" +
-            "      \"sea_level\": 267,\n" +
-            "      \"vacuum\": 304\n" +
-            "    },\n" +
-            "    \"engine_loss_max\": 0,\n" +
-            "    \"propellant_1\": \"liquid oxygen\",\n" +
-            "    \"propellant_2\": \"RP-1 kerosene\",\n" +
-            "    \"thrust_sea_level\": {\n" +
-            "      \"kN\": 420,\n" +
-            "      \"lbf\": 94000\n" +
-            "    },\n" +
-            "    \"thrust_vacuum\": {\n" +
-            "      \"kN\": 480,\n" +
-            "      \"lbf\": 110000\n" +
-            "    },\n" +
-            "    \"thrust_to_weight\": 96\n" +
-            "  },\n" +
-            "  \"landing_legs\": {\n" +
-            "    \"number\": 0,\n" +
-            "    \"material\": null\n" +
-            "  },\n" +
-            "  \"flickr_images\": [\n" +
-            "    \"https://imgur.com/DaCfMsj.jpg\",\n" +
-            "    \"https://imgur.com/azYafd8.jpg\"\n" +
-            "  ],\n" +
-            "  \"wikipedia\": \"https://en.wikipedia.org/wiki/Falcon_1\",\n" +
-            "  \"description\": \"The Falcon 1 was an expendable launch system privately developed and manufactured by SpaceX during 2006-2009. On 28 September 2008, Falcon 1 became the first privately-developed liquid-fuel launch vehicle to go into orbit around the Earth.\",\n" +
-            "  \"rocket_id\": \"falcon1\",\n" +
-            "  \"rocket_name\": \"Falcon 1\",\n" +
-            "  \"rocket_type\": \"rocket\"\n" +
-            "}"
-
-    private val launchRes = "[\n" +
-            "  {\n" +
+    private var launchItemOne = "{\n" +
             "    \"flight_number\": 1,\n" +
             "    \"mission_name\": \"FalconSat\",\n" +
             "    \"mission_id\": [\n" +
@@ -212,7 +106,7 @@ class SpaceXRepositoryTest {
             "      \"site_name\": \"Kwajalein Atoll\",\n" +
             "      \"site_name_long\": \"Kwajalein Atoll Omelek Island\"\n" +
             "    },\n" +
-            "    \"launch_success\": false,\n" +
+            "    \"launch_success\": true,\n" +
             "    \"launch_failure_details\": {\n" +
             "      \"time\": 33,\n" +
             "      \"altitude\": null,\n" +
@@ -240,8 +134,9 @@ class SpaceXRepositoryTest {
             "    \"timeline\": {\n" +
             "      \"webcast_liftoff\": 54\n" +
             "    }\n" +
-            "  },\n" +
-            "  {\n" +
+            "  }"
+
+    private val launchItemSecond = "{\n" +
             "    \"flight_number\": 2,\n" +
             "    \"mission_name\": \"DemoSat\",\n" +
             "    \"mission_id\": [\n" +
@@ -360,88 +255,42 @@ class SpaceXRepositoryTest {
             "    \"timeline\": {\n" +
             "      \"webcast_liftoff\": 60\n" +
             "    }\n" +
-            "  }\n" +
-            "]"
+            "  }"
+
 
     @Before
     fun initialize() {
         apiServiceMock = Mockito.mock(ApiInterface::class.java)
-        rocketResponse = Gson().fromJson(rocketRes, RocketResponse::class.java)
-        launchResponse = Gson().fromJson(launchRes, ArrayList<LaunchResponseItem>()::class.java)
+        spaceXRepository = SpaceXRepository(apiServiceMock)
+        viewModel = SpaceXViewModel(spaceXRepository)
+        viewModel.launchList = arrayListOf(
+            Gson().fromJson(launchItemOne, LaunchResponseItem::class.java),
+            Gson().fromJson(launchItemSecond, LaunchResponseItem::class.java)
+        )
+    }
 
+
+    @Test
+    fun sortByMissionNameTest() {
+        Assert.assertEquals(
+            "DemoSat",
+            (sortByMissionName(viewModel.launchList))[0].missionName
+        )
     }
 
     @Test
-    fun getRocketInfo() {
-        runBlocking {
-            Mockito.`when`(apiServiceMock.getRocketInfo("falcon1"))
-                .thenReturn(
-                    Response.success(
-                        200,
-                        rocketResponse
-                    )
-                )
-            Assert.assertEquals(
-                true,
-                SpaceXRepository(apiServiceMock).getRocketInfo(
-                    "falcon1"
-                ).isSuccessful
-            )
-        }
+    fun filterByLaunchSuccess() {
+        Assert.assertEquals(
+            true,
+            (filterByLaunchSuccess(viewModel.launchList))[0].launchSuccess
+        )
     }
 
     @Test
-    fun getRocketInfoFail() {
-        runBlocking {
-            Mockito.`when`(apiServiceMock.getRocketInfo("falcon1"))
-                .thenReturn(
-                    Response.error(
-                        404,
-                        rocketRes.toResponseBody()
-                    )
-                )
-
-            Assert.assertEquals(
-                false,
-                SpaceXRepository(apiServiceMock).getRocketInfo(
-                    "falcon1"
-                ).isSuccessful
-            )
-        }
+    fun filterByLaunchUnSuccess() {
+        Assert.assertEquals(
+            false,
+            (filterByLaunchUnSuccess(viewModel.launchList))[0].launchSuccess
+        )
     }
-
-    @Test
-    fun getLaunchList() {
-        runBlocking {
-            Mockito.`when`(apiServiceMock.getLaunchList())
-                .thenReturn(
-                    Response.success(
-                        200,
-                        launchResponse
-                    )
-                )
-            Assert.assertEquals(
-                true,
-                SpaceXRepository(apiServiceMock).getLaunchList().isSuccessful
-            )
-        }
-    }
-
-    @Test
-    fun getLaunchListFail() {
-        runBlocking {
-            Mockito.`when`(apiServiceMock.getLaunchList())
-                .thenReturn(
-                    Response.error(
-                        404,
-                        launchRes.toResponseBody()
-                    )
-                )
-            Assert.assertEquals(
-                false,
-                SpaceXRepository(apiServiceMock).getLaunchList().isSuccessful
-            )
-        }
-    }
-
 }

@@ -28,7 +28,11 @@ object ApiController {
     ): T {
         val retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().serializeNulls().setLenient().create()))
+            .addConverterFactory(
+                GsonConverterFactory.create(
+                    GsonBuilder().serializeNulls().setLenient().create()
+                )
+            )
             .client(getBuilder(context).build())
             .build()
         return retrofit.create(T::class.java)

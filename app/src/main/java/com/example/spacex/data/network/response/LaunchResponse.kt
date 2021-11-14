@@ -3,7 +3,6 @@ package com.example.spacex.data.network.response
 
 import com.google.gson.annotations.SerializedName
 
-//class LaunchResponse : ArrayList<LaunchResponse.LaunchResponseItem>(){
     data class LaunchResponseItem(
         @SerializedName("details")
         val details: String?,
@@ -270,4 +269,3 @@ import com.google.gson.annotations.SerializedName
         @SerializedName("webcast_liftoff")
         val webcastLiftoff: Int?
     )
-//}
