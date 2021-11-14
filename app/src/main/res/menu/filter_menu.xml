@@ -3,12 +3,12 @@
 
     <item
         android:id="@+id/name"
-        android:title="Sort On Mission Name" />
+        android:title="Sort By Mission Name" />
     <item
         android:id="@+id/launchSuccess"
-        android:title="Filter On Launch Success" />
+        android:title="Filter By Launch Success" />
 
     <item
         android:id="@+id/launchFail"
-        android:title="Filter Launch Fail" />
+        android:title="Filter By Launch Fail" />
 </menu>
